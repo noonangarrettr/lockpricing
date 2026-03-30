@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Comp Calc">
+<title>Target Compensation Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #00AEEF;
+    --black: #000000;
+    --jet: #363636;
+    --silver: #888888;
+    --green: #7EB142;
+    --yellow: #FFD534;
+    --orange: #FF732B;
+    --red: #FF2147;
+    --bg: #F5F5F7;
+    --card: #FFFFFF;
+    --border: rgba(0,0,0,0.08);
+    --text: #1D1D1F;
+    --muted: #6E6E73;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 24px);
+  }
+
+  .header {
+    background: var(--black);
+    color: #fff;
+    padding: 56px 20px 24px;
+    padding-top: calc(56px + env(safe-area-inset-top, 0px));
+  }
+
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .header-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  .content {
+    padding: 20px 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 14px;
+    border: 1.5px solid var(--border);
+    transition: border-color 0.2s;
+  }
+
+  .card.modified { border-color: var(--orange); }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .card-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .card-header-row .card-label { margin-bottom: 0; }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 4px 4px 4px 16px;
+  }
+
+  .input-row label {
+    font-size: 14px;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .input-row input {
+    flex: 1;
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    text-align: right;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 0;
+    -webkit-appearance: none;
+  }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  .lookup-badge {
+    display: inline-block;
+    background: var(--black);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 12px;
+  }
+
+  .lookup-badge span { color: var(--blue); }
+
+  /* Centered flex grid */
+  .results-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .result-cell {
+    border-radius: var(--radius-sm);
+    padding: 12px 10px;
+    text-align: center;
+    flex: 0 0 calc(33.333% - 6px);
+    min-width: 88px;
+  }
+
+  .result-cell.target { flex: 0 0 100%; }
+
+  .cell-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .cell-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .result-cell.target .cell-value { font-size: 26px; font-weight: 600; }
+  .result-cell.target .cell-label { font-size: 11px; }
+
+  .style-low { background: #FFF5EA; }
+  .style-low .cell-label { color: #9a5200; }
+  .style-low .cell-value { color: #9a5200; }
+
+  .style-tlow { background: #FFFBEA; }
+  .style-tlow .cell-label { color: #7a6200; }
+  .style-tlow .cell-value { color: #7a6200; }
+
+  .style-target { background: #E8F9FF; border: 2px solid var(--blue); }
+  .style-target .cell-label { color: #005c80; }
+  .style-target .cell-value { color: #003d57; }
+
+  .style-thigh { background: #EDF7E5; }
+  .style-thigh .cell-label { color: #3a6610; }
+  .style-thigh .cell-value { color: #3a6610; }
+
+  .style-above { background: #F0FAE6; }
+  .style-above .cell-label { color: #2a5008; }
+  .style-above .cell-value { color: #2a5008; }
+
+  /* Modified banner */
+  .modified-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFF4E6;
+    border: 1px solid #FFBB6B;
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #7a4200;
+  }
+
+  .modified-banner .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--orange);
+    flex-shrink: 0;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .empty-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+    opacity: 0.4;
+  }
+
+  /* Detail rows */
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--bg);
+    font-size: 14px;
+    gap: 8px;
+  }
+
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .dk { color: var(--muted); flex-shrink: 0; }
+  .detail-row .dv { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--text); }
+
+  /* Inline editable inputs */
+  .inline-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 4px 8px 4px 10px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .inline-input-wrap:focus-within { border-color: var(--blue); }
+
+  .inline-input-wrap.changed {
+    border-color: var(--orange);
+    background: #FFF8F0;
+  }
+
+  .inline-input-wrap input {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    text-align: right;
+    width: 72px;
+    padding: 2px 0;
+    -webkit-appearance: none;
+  }
+
+  .inline-input-wrap .unit {
+    font-size: 12px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: all 0.15s;
+  }
+
+  .reset-btn.active {
+    border-color: var(--orange);
+    color: var(--orange);
+  }
+
+  .reset-btn:active { background: var(--bg); }
+
+  .divider { height: 1px; background: var(--bg); margin: 8px 0; }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 2px;
+    font-size: 14px;
+  }
+
+  .total-row .dk { color: var(--jet); font-weight: 600; }
+  .total-row .dv { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--blue); font-size: 15px; }
+
+  .bar-track { height: 6px; background: var(--bg); border-radius: 3px; margin-top: 16px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #FF732B 0%, #FFD534 50%, #7EB142 75%, #00AEEF 100%); }
+
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .error-msg {
+    background: #FFF0F0;
+    border: 1px solid #F7C1C1;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #A32D2D;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 8px 16px 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Compensation Tool</div>
+  <h1>Target Comp<br>Calculator</h1>
+  <div class="header-sub">Prospective client pricing</div>
+</div>
+
+<div class="content">
+
+  <!-- Headcount -->
+  <div class="card">
+    <div class="card-label">Headcount</div>
+    <div class="input-row">
+      <label>EEs</label>
+      <input type="number" id="hcInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" min="1" max="50000" oninput="calculate()">
+    </div>
+    <div id="badgeArea"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="card" id="resultsCard">
+    <div class="card-label">Compensation range</div>
+    <div id="resultsArea">
+      <div class="empty-state">
+        <div class="empty-icon">◎</div>
+        Enter headcount to see the range
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail + editable assumptions -->
+  <div id="detailCard" class="card" style="display:none;">
+    <div class="card-header-row">
+      <div class="card-label">Calculation detail</div>
+      <button class="reset-btn" id="resetBtn" onclick="resetAssumptions()">Reset</button>
+    </div>
+
+    <div class="detail-row">
+      <span class="dk">Participation</span>
+      <div class="inline-input-wrap" id="partWrap">
+        <input type="number" id="partAdj" inputmode="decimal" value="70" min="1" max="100" step="1" oninput="onAssumptionChange()">
+        <span class="unit">%</span>
+      </div>
+    </div>
+
+    <div class="detail-row">
+      <span class="dk">PEPY spend</span>
+      <div class="inline-input-wrap" id="pepyWrap">
+        <span class="unit">$</span>
+        <input type="number" id="pepyAdj" inputmode="numeric" value="17000" min="0" oninput="onAssumptionChange()">
+      </div>
+    </div>
+
+    <div class="detail-row">
+      <span class="dk">Commission rate</span>
+      <span class="dv" id="commRate">—</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="dk">PEPY-based comp</span>
+      <span class="dv" id="pepyResult">—</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="dk" id="pepmLabel">PEPM × 12</span>
+      <span class="dv" id="pepmResult">—</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="total-row">
+      <span class="dk">Blended target mid</span>
+      <span class="dv" id="blendedMid">—</span>
+    </div>
+
+    <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+    <div class="bar-labels">
+      <span>Low range</span>
+      <span>Target</span>
+      <span>Above Mkt</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">Based on internal pricing model · For internal use only</div>
+
+<script>
+const BANDS = [
+  { lower:1,    upper:100,   pepm:52, comm:0.05   },
+  { lower:101,  upper:200,   pepm:48, comm:0.05   },
+  { lower:201,  upper:300,   pepm:41, comm:0.045  },
+  { lower:301,  upper:400,   pepm:35, comm:0.04   },
+  { lower:401,  upper:500,   pepm:32, comm:0.035  },
+  { lower:501,  upper:750,   pepm:31, comm:0.03   },
+  { lower:751,  upper:1000,  pepm:23, comm:0.025  },
+  { lower:1001, upper:1500,  pepm:17, comm:0.02   },
+  { lower:1501, upper:2000,  pepm:16, comm:0.0175 },
+  { lower:2001, upper:3000,  pepm:15, comm:0.015  },
+  { lower:3001, upper:5000,  pepm:10, comm:0.01   },
+  { lower:5001, upper:7500,  pepm:8,  comm:0.008  },
+  { lower:7501, upper:10000, pepm:6,  comm:0.0075 },
+  { lower:10001,upper:50000, pepm:4,  comm:0.005  },
+];
+
+const POINTS = [
+  { key:'low',   label:'Low range',    mult:0.85, style:'style-low'    },
+  { key:'tlow',  label:'Target low',   mult:0.90, style:'style-tlow'   },
+  { key:'mid',   label:'Target mid',   mult:1.00, style:'style-target' },
+  { key:'thigh', label:'Target high',  mult:1.10, style:'style-thigh'  },
+  { key:'above', label:'Above market', mult:1.15, style:'style-above'  },
+];
+
+const DEFAULT_PEPY = 17000;
+const DEFAULT_PART = 70;
+
+function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+function getBand(hc) { return BANDS.find(b => hc >= b.lower && hc <= b.upper) || null; }
+
+function isModified() {
+  const pepy = parseFloat(document.getElementById('pepyAdj').value);
+  const part = parseFloat(document.getElementById('partAdj').value);
+  return pepy !== DEFAULT_PEPY || part !== DEFAULT_PART;
+}
+
+function onAssumptionChange() {
+  const pepyChanged = parseFloat(document.getElementById('pepyAdj').value) !== DEFAULT_PEPY;
+  const partChanged = parseFloat(document.getElementById('partAdj').value) !== DEFAULT_PART;
+  document.getElementById('pepyWrap').classList.toggle('changed', pepyChanged);
+  document.getElementById('partWrap').classList.toggle('changed', partChanged);
+  document.getElementById('resetBtn').classList.toggle('active', pepyChanged || partChanged);
+  calculate();
+}
+
+function resetAssumptions() {
+  document.getElementById('pepyAdj').value = DEFAULT_PEPY;
+  document.getElementById('partAdj').value = DEFAULT_PART;
+  document.getElementById('pepyWrap').classList.remove('changed');
+  document.getElementById('partWrap').classList.remove('changed');
+  document.getElementById('resetBtn').classList.remove('active');
+  calculate();
+}
+
+function calculate() {
+  const hc      = parseInt(document.getElementById('hcInput').value) || 0;
+  const pepyVal = parseFloat(document.getElementById('pepyAdj').value) || DEFAULT_PEPY;
+  const partPct = parseFloat(document.getElementById('partAdj').value);
+  const part    = isNaN(partPct) ? 0.70 : partPct / 100;
+
+  const badgeArea   = document.getElementById('badgeArea');
+  const resultsArea = document.getElementById('resultsArea');
+  const resultsCard = document.getElementById('resultsCard');
+  const detailCard  = document.getElementById('detailCard');
+  const modified    = isModified();
+
+  if (!hc || hc < 1) {
+    badgeArea.innerHTML = '';
+    resultsArea.innerHTML = '<div class="empty-state"><div class="empty-icon">◎</div>Enter headcount to see the range</div>';
+    resultsCard.classList.remove('modified');
+    detailCard.style.display = 'none';
+    return;
+  }
+
+  if (hc > 50000) {
+    resultsArea.innerHTML = '<div class="error-msg">Headcount exceeds model range (50,000). Please verify input.</div>';
+    detailCard.style.display = 'none';
+    return;
+  }
+
+  const band = getBand(hc);
+  if (!band) {
+    resultsArea.innerHTML = '<div class="error-msg">No pricing band found for this headcount.</div>';
+    detailCard.style.display = 'none';
+    return;
+  }
+
+  const pepyComp  = hc * part * pepyVal * band.comm;
+  const pepmComp  = band.pepm * hc * 12;
+  const targetMid = (pepyComp + pepmComp) / 2;
+
+  const bandLabel = band.upper >= 50000
+    ? `${band.lower.toLocaleString()}+`
+    : `${band.lower.toLocaleString()} – ${band.upper.toLocaleString()}`;
+
+  badgeArea.innerHTML = `<div class="lookup-badge">Band <span>${bandLabel}</span> EEs · blended avg</div>`;
+
+  resultsCard.classList.toggle('modified', modified);
+
+  let html = '';
+  if (modified) {
+    html += `<div class="modified-banner"><div class="dot"></div>Modified assumptions — results reflect adjusted inputs</div>`;
+  }
+
+  html += '<div class="results-grid">';
+  POINTS.forEach(p => {
+    const val = targetMid * p.mult;
+    html += `<div class="result-cell ${p.style}${p.key === 'mid' ? ' target' : ''}">
+      <div class="cell-label">${p.label}</div>
+      <div class="cell-value">${fmt(val)}</div>
+    </div>`;
+  });
+  html += '</div>';
+  resultsArea.innerHTML = html;
+
+  document.getElementById('commRate').textContent   = (band.comm * 100).toFixed(2) + '%';
+  document.getElementById('pepyResult').textContent = fmt(pepyComp);
+  document.getElementById('pepmLabel').textContent  = `PEPM ($${band.pepm} × 12)`;
+  document.getElementById('pepmResult').textContent = fmt(pepmComp);
+  document.getElementById('blendedMid').textContent = fmt(targetMid);
+
+  detailCard.style.display = 'block';
+}
+</script>
+</body>
+</html>
