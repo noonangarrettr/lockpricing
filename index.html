@@ -316,6 +316,29 @@
 
   .reset-btn:active { background: var(--bg); }
 
+  .clear-btn {
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 6px;
+    flex-shrink: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s, color 0.15s;
+    -webkit-appearance: none;
+  }
+
+  .clear-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .clear-btn:active { color: var(--text); }
+
   .divider { height: 1px; background: var(--bg); margin: 8px 0; }
 
   .total-row {
@@ -374,6 +397,7 @@
     <div class="input-row">
       <label>EEs</label>
       <input type="number" id="hcInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" min="1" max="50000" oninput="calculate()">
+      <button class="clear-btn" id="clearHcBtn" onclick="clearHeadcount()" aria-label="Clear headcount">×</button>
     </div>
     <div id="badgeArea"></div>
   </div>
@@ -502,8 +526,18 @@ function resetAssumptions() {
   calculate();
 }
 
+function clearHeadcount() {
+  const input = document.getElementById('hcInput');
+  input.value = '';
+  document.getElementById('clearHcBtn').classList.remove('visible');
+  calculate();
+  input.focus();
+}
+
 function calculate() {
   const hc      = parseInt(document.getElementById('hcInput').value) || 0;
+  const clearBtn = document.getElementById('clearHcBtn');
+  if (clearBtn) clearBtn.classList.toggle('visible', document.getElementById('hcInput').value !== '');
   const pepyVal = parseFloat(document.getElementById('pepyAdj').value) || DEFAULT_PEPY;
   const partPct = parseFloat(document.getElementById('partAdj').value);
   const part    = isNaN(partPct) ? 0.70 : partPct / 100;
