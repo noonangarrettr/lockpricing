@@ -19,27 +19,32 @@
     --yellow: #FFD534;
     --orange: #FF732B;
     --red: #FF2147;
-    --bg: #F5F5F7;
-    --card: #FFFFFF;
-    --border: rgba(0,0,0,0.08);
+    --bg: #E8ECF0;
+    --card: rgba(255,255,255,0.62);
+    --card-blur: blur(20px) saturate(1.6);
+    --border: rgba(255,255,255,0.55);
+    --border-outer: rgba(0,0,0,0.07);
     --text: #1D1D1F;
     --muted: #6E6E73;
-    --radius: 16px;
-    --radius-sm: 10px;
+    --radius: 20px;
+    --radius-sm: 12px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
     font-family: 'DM Sans', -apple-system, sans-serif;
-    background: var(--bg);
+    background: linear-gradient(145deg, #dce4ee 0%, #c9d4e0 40%, #d4dde8 100%);
+    background-attachment: fixed;
     color: var(--text);
     min-height: 100vh;
     padding-bottom: env(safe-area-inset-bottom, 24px);
   }
 
   .header {
-    background: var(--black);
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
     color: #fff;
     padding: 56px 20px 24px;
     padding-top: calc(56px + env(safe-area-inset-top, 0px));
@@ -75,10 +80,13 @@
 
   .card {
     background: var(--card);
+    backdrop-filter: var(--card-blur);
+    -webkit-backdrop-filter: var(--card-blur);
     border-radius: var(--radius);
     padding: 20px;
     margin-bottom: 14px;
     border: 1.5px solid var(--border);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.8);
     transition: border-color 0.2s;
   }
 
@@ -106,9 +114,10 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    background: var(--bg);
+    background: rgba(0,0,0,0.04);
     border-radius: var(--radius-sm);
     padding: 4px 4px 4px 16px;
+    border: 1px solid rgba(255,255,255,0.5);
   }
 
   .input-row label {
@@ -428,13 +437,7 @@
       </div>
     </div>
 
-    <div class="detail-row">
-      <span class="dk">PEPY spend</span>
-      <div class="inline-input-wrap" id="pepyWrap">
-        <span class="unit">$</span>
-        <input type="number" id="pepyAdj" inputmode="numeric" value="17000" min="0" oninput="onAssumptionChange()">
-      </div>
-    </div>
+    <input type="hidden" id="pepyAdj" value="17000">
 
     <div class="detail-row">
       <span class="dk">Commission rate</span>
@@ -442,12 +445,17 @@
     </div>
 
     <div class="detail-row">
-      <span class="dk">PEPY-based comp</span>
+      <span class="dk">PEPM rate</span>
+      <span class="dv" id="pepmRate">—</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="dk">Commission based comp</span>
       <span class="dv" id="pepyResult">—</span>
     </div>
 
     <div class="detail-row">
-      <span class="dk" id="pepmLabel">PEPM × 12</span>
+      <span class="dk">PEPM based comp</span>
       <span class="dv" id="pepmResult">—</span>
     </div>
 
@@ -503,24 +511,20 @@ function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
 function getBand(hc) { return BANDS.find(b => hc >= b.lower && hc <= b.upper) || null; }
 
 function isModified() {
-  const pepy = parseFloat(document.getElementById('pepyAdj').value);
   const part = parseFloat(document.getElementById('partAdj').value);
-  return pepy !== DEFAULT_PEPY || part !== DEFAULT_PART;
+  return part !== DEFAULT_PART;
 }
 
 function onAssumptionChange() {
-  const pepyChanged = parseFloat(document.getElementById('pepyAdj').value) !== DEFAULT_PEPY;
   const partChanged = parseFloat(document.getElementById('partAdj').value) !== DEFAULT_PART;
-  document.getElementById('pepyWrap').classList.toggle('changed', pepyChanged);
   document.getElementById('partWrap').classList.toggle('changed', partChanged);
-  document.getElementById('resetBtn').classList.toggle('active', pepyChanged || partChanged);
+  document.getElementById('resetBtn').classList.toggle('active', partChanged);
   calculate();
 }
 
 function resetAssumptions() {
   document.getElementById('pepyAdj').value = DEFAULT_PEPY;
   document.getElementById('partAdj').value = DEFAULT_PART;
-  document.getElementById('pepyWrap').classList.remove('changed');
   document.getElementById('partWrap').classList.remove('changed');
   document.getElementById('resetBtn').classList.remove('active');
   calculate();
@@ -598,8 +602,8 @@ function calculate() {
   resultsArea.innerHTML = html;
 
   document.getElementById('commRate').textContent   = (band.comm * 100).toFixed(2) + '%';
+  document.getElementById('pepmRate').textContent   = `$${band.pepm} × 12`;
   document.getElementById('pepyResult').textContent = fmt(pepyComp);
-  document.getElementById('pepmLabel').textContent  = `PEPM ($${band.pepm} × 12)`;
   document.getElementById('pepmResult').textContent = fmt(pepmComp);
   document.getElementById('blendedMid').textContent = fmt(targetMid);
 
