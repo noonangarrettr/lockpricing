@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Comp Calc">
-<title>Target Compensation Calculator</title>
+<title>Pricing Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -19,66 +19,30 @@
     --yellow: #FFD534;
     --orange: #FF732B;
     --red: #FF2147;
-    --bg: rgba(255,255,255,0.18);
+    --bg: #F5F5F7;
+    --card: #FFFFFF;
+    --border: rgba(0,0,0,0.08);
     --text: #1D1D1F;
-    --muted: #5a5a68;
-    --radius: 24px;
-    --radius-sm: 14px;
-    --glass-bg: rgba(255,255,255,0.48);
-    --glass-blur: blur(48px) saturate(2.4) brightness(1.06);
-    --glass-border: rgba(255,255,255,0.72);
-    --glass-shadow:
-      0 8px 40px rgba(0,0,0,0.10),
-      0 2px 8px rgba(0,0,0,0.06),
-      inset 0 1.5px 0 rgba(255,255,255,0.88),
-      inset 0 -1px 0 rgba(0,0,0,0.03);
+    --muted: #6E6E73;
+    --radius: 16px;
+    --radius-sm: 10px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
     font-family: 'DM Sans', -apple-system, sans-serif;
-    background: #dde3ea;
+    background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding-bottom: env(safe-area-inset-bottom, 24px);
-    isolation: isolate;
   }
 
-  /* Subtle cool gray-blue background — same tones as original */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse at 15% 15%, rgba(180,200,225,0.55) 0%, transparent 50%),
-      radial-gradient(ellipse at 82% 8%,  rgba(195,210,230,0.45) 0%, transparent 46%),
-      radial-gradient(ellipse at 65% 82%, rgba(165,185,210,0.40) 0%, transparent 48%),
-      radial-gradient(ellipse at 8%  78%, rgba(200,215,232,0.38) 0%, transparent 46%),
-      linear-gradient(145deg, #dce4ee 0%, #c9d4e0 40%, #d4dde8 100%);
-    z-index: -1;
-  }
-
+  /* ── Header ── */
   .header {
-    background: rgba(12,8,32,0.68);
-    backdrop-filter: blur(48px) saturate(2.2) brightness(0.88);
-    -webkit-backdrop-filter: blur(48px) saturate(2.2) brightness(0.88);
-    border-bottom: 1px solid rgba(255,255,255,0.10);
+    background: var(--black);
     color: #fff;
-    padding: 56px 20px 24px;
+    padding: 56px 20px 0;
     padding-top: calc(56px + env(safe-area-inset-top, 0px));
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Header specular streak */
-  .header::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 40%, rgba(255,255,255,0.55) 60%, transparent 100%);
-    pointer-events: none;
   }
 
   .header-eyebrow {
@@ -95,13 +59,40 @@
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 1.2;
+    margin-bottom: 16px;
   }
 
-  .header-sub {
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-    margin-top: 4px;
+  /* ── Tab bar inside header ── */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
   }
+
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.45);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 4px 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    -webkit-appearance: none;
+    letter-spacing: 0.01em;
+  }
+
+  .tab-btn.active {
+    color: #fff;
+    border-bottom-color: var(--blue);
+  }
+
+  /* ── Page views ── */
+  .page { display: none; padding-bottom: env(safe-area-inset-bottom, 24px); }
+  .page.active { display: block; }
 
   .content {
     padding: 20px 16px;
@@ -109,39 +100,17 @@
     margin: 0 auto;
   }
 
+  /* ── Cards ── */
   .card {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    background: var(--card);
     border-radius: var(--radius);
     padding: 20px;
     margin-bottom: 14px;
-    border: 1.5px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
+    border: 1.5px solid var(--border);
     transition: border-color 0.2s;
-    position: relative;
-    overflow: hidden;
   }
 
-  /* Card specular highlight — simulates light refracting through glass */
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 52%;
-    background: linear-gradient(175deg,
-      rgba(255,255,255,0.38) 0%,
-      rgba(255,255,255,0.10) 50%,
-      transparent 100%);
-    border-radius: var(--radius) var(--radius) 60% 60% / var(--radius) var(--radius) 30px 30px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Ensure card content sits above specular */
-  .card > * { position: relative; z-index: 1; }
-
-  .card.modified { border-color: rgba(255,115,43,0.8); box-shadow: var(--glass-shadow), 0 0 0 1px rgba(255,115,43,0.25); }
+  .card.modified { border-color: var(--orange); }
 
   .card-label {
     font-size: 11px;
@@ -161,15 +130,14 @@
 
   .card-header-row .card-label { margin-bottom: 0; }
 
+  /* ── Input rows ── */
   .input-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: rgba(255,255,255,0.28);
+    background: var(--bg);
     border-radius: var(--radius-sm);
     padding: 4px 4px 4px 16px;
-    border: 1px solid rgba(255,255,255,0.65);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 4px rgba(90,40,200,0.06);
   }
 
   .input-row label {
@@ -195,26 +163,48 @@
     -webkit-appearance: none;
   }
 
+  .input-row select {
+    flex: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    text-align: right;
+    padding: 10px 0;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .select-arrow {
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+    pointer-events: none;
+    margin-right: 8px;
+  }
+
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
+  /* ── Lookup badge ── */
   .lookup-badge {
     display: inline-block;
-    background: rgba(12,8,32,0.72);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--black);
     color: #fff;
     font-family: 'DM Mono', monospace;
     font-size: 11px;
     padding: 3px 10px;
     border-radius: 20px;
     margin-top: 12px;
-    border: 1px solid rgba(255,255,255,0.15);
   }
 
   .lookup-badge span { color: var(--blue); }
 
-  /* Centered flex grid */
+  /* ── Comp results grid ── */
   .results-grid {
     display: flex;
     flex-wrap: wrap;
@@ -227,24 +217,8 @@
     padding: 12px 10px;
     text-align: center;
     flex: 0 0 calc(50% - 4px);
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.55);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 2px 8px rgba(0,0,0,0.05);
+    min-width: 88px;
   }
-
-  /* Per-cell specular */
-  .result-cell::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 50%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.32) 0%, transparent 100%);
-    pointer-events: none;
-    border-radius: var(--radius-sm) var(--radius-sm) 50% 50% / var(--radius-sm) var(--radius-sm) 20px 20px;
-  }
-
-  .result-cell > * { position: relative; z-index: 1; }
 
   .result-cell.target { flex: 0 0 100%; }
 
@@ -265,46 +239,43 @@
   .result-cell.target .cell-value { font-size: 26px; font-weight: 600; }
   .result-cell.target .cell-label { font-size: 11px; }
 
-  .style-low { background: rgba(255,245,234,0.82); border-color: rgba(255,200,140,0.5); }
+  .style-low { background: #FFF5EA; }
   .style-low .cell-label { color: #9a5200; }
   .style-low .cell-value { color: #9a5200; }
 
-  .style-tlow { background: rgba(255,251,234,0.82); border-color: rgba(255,230,120,0.5); }
+  .style-tlow { background: #FFFBEA; }
   .style-tlow .cell-label { color: #7a6200; }
   .style-tlow .cell-value { color: #7a6200; }
 
-  .style-target { background: rgba(232,249,255,0.88); border: 1.5px solid rgba(0,174,239,0.45); box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 0 0 1px rgba(0,174,239,0.08), 0 4px 16px rgba(0,174,239,0.10); }
+  .style-target { background: #E8F9FF; border: 2px solid var(--blue); }
   .style-target .cell-label { color: #005c80; }
   .style-target .cell-value { color: #003d57; }
 
-  .style-thigh { background: rgba(237,247,229,0.82); border-color: rgba(160,210,100,0.45); }
+  .style-thigh { background: #EDF7E5; }
   .style-thigh .cell-label { color: #3a6610; }
   .style-thigh .cell-value { color: #3a6610; }
 
-  .style-above { background: rgba(240,250,230,0.82); border-color: rgba(140,210,120,0.45); }
+  .style-above { background: #F0FAE6; }
   .style-above .cell-label { color: #2a5008; }
   .style-above .cell-value { color: #2a5008; }
 
-  /* Modified banner */
+  /* ── Modified banner ── */
   .modified-banner {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255,140,30,0.12);
-    border: 1px solid rgba(255,140,30,0.35);
+    background: #FFF4E6;
+    border: 1px solid #FFBB6B;
     border-radius: var(--radius-sm);
     padding: 9px 12px;
     margin-bottom: 12px;
     font-size: 12px;
     font-weight: 500;
-    color: #7a3800;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    color: #7a4200;
   }
 
   .modified-banner .dot {
-    width: 7px;
-    height: 7px;
+    width: 7px; height: 7px;
     border-radius: 50%;
     background: var(--orange);
     flex-shrink: 0;
@@ -317,19 +288,15 @@
     font-size: 14px;
   }
 
-  .empty-icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-    opacity: 0.4;
-  }
+  .empty-icon { font-size: 32px; margin-bottom: 8px; opacity: 0.4; }
 
-  /* Detail rows */
+  /* ── Detail rows (comp) ── */
   .detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 7px 0;
-    border-bottom: 1px solid rgba(0,0,0,0.06);
+    border-bottom: 1px solid var(--bg);
     font-size: 14px;
     gap: 8px;
   }
@@ -338,25 +305,19 @@
   .detail-row .dk { color: var(--muted); flex-shrink: 0; }
   .detail-row .dv { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--text); }
 
-  /* Inline editable inputs */
   .inline-input-wrap {
     display: flex;
     align-items: center;
     gap: 3px;
-    background: rgba(255,255,255,0.35);
-    border-radius: 10px;
+    background: var(--bg);
+    border-radius: 8px;
     padding: 4px 8px 4px 10px;
-    border: 1.5px solid rgba(255,255,255,0.6);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+    border: 1.5px solid transparent;
     transition: border-color 0.15s, background 0.15s;
   }
 
-  .inline-input-wrap:focus-within { border-color: rgba(0,174,239,0.7); background: rgba(255,255,255,0.45); }
-
-  .inline-input-wrap.changed {
-    border-color: rgba(255,115,43,0.7);
-    background: rgba(255,200,150,0.18);
-  }
+  .inline-input-wrap:focus-within { border-color: var(--blue); }
+  .inline-input-wrap.changed { border-color: var(--orange); background: #FFF8F0; }
 
   .inline-input-wrap input {
     font-family: 'DM Mono', monospace;
@@ -372,16 +333,12 @@
     -webkit-appearance: none;
   }
 
-  .inline-input-wrap .unit {
-    font-size: 12px;
-    color: var(--muted);
-    flex-shrink: 0;
-  }
+  .inline-input-wrap .unit { font-size: 12px; color: var(--muted); flex-shrink: 0; }
 
   .reset-btn {
-    background: rgba(255,255,255,0.30);
-    border: 1px solid rgba(255,255,255,0.65);
-    border-radius: 10px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
     padding: 5px 14px;
     font-family: 'DM Sans', sans-serif;
     font-size: 12px;
@@ -390,43 +347,12 @@
     cursor: pointer;
     -webkit-appearance: none;
     transition: all 0.15s;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
 
-  .reset-btn.active {
-    border-color: rgba(255,115,43,0.6);
-    color: var(--orange);
-    background: rgba(255,115,43,0.10);
-  }
+  .reset-btn.active { border-color: var(--orange); color: var(--orange); }
+  .reset-btn:active { background: var(--bg); }
 
-  .reset-btn:active { background: rgba(255,255,255,0.18); }
-
-  .clear-btn {
-    background: none;
-    border: none;
-    padding: 6px 8px;
-    font-size: 18px;
-    line-height: 1;
-    color: var(--muted);
-    cursor: pointer;
-    border-radius: 6px;
-    flex-shrink: 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s, color 0.15s;
-    -webkit-appearance: none;
-  }
-
-  .clear-btn.visible {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .clear-btn:active { color: var(--text); }
-
-  .divider { height: 1px; background: rgba(0,0,0,0.07); margin: 8px 0; }
+  .divider { height: 1px; background: var(--bg); margin: 8px 0; }
 
   .total-row {
     display: flex;
@@ -439,7 +365,7 @@
   .total-row .dk { color: var(--jet); font-weight: 600; }
   .total-row .dv { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--blue); font-size: 15px; }
 
-  .bar-track { height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; margin-top: 16px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.08); }
+  .bar-track { height: 6px; background: var(--bg); border-radius: 3px; margin-top: 16px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #FF732B 0%, #FFD534 50%, #7EB142 75%, #00AEEF 100%); }
 
   .bar-labels {
@@ -452,15 +378,214 @@
   }
 
   .error-msg {
-    background: rgba(255,50,50,0.10);
-    border: 1px solid rgba(255,50,50,0.28);
+    background: #FFF0F0;
+    border: 1px solid #F7C1C1;
     border-radius: var(--radius-sm);
     padding: 10px 14px;
     font-size: 13px;
-    color: #8a1a1a;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    color: #A32D2D;
   }
+
+  /* ── Profitability page rows ── */
+  .p-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--bg);
+    font-size: 14px;
+    gap: 12px;
+  }
+
+  .p-row:last-child { border-bottom: none; }
+  .p-row .pk { color: var(--muted); flex-shrink: 0; font-size: 13px; }
+  .p-row .pv { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--text); font-size: 14px; }
+  .p-row .pv.computed { color: var(--jet); }
+
+  /* Margin result cell */
+  .margin-cell {
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    margin-top: 4px;
+    border: 2px solid transparent;
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .margin-cell.positive { background: #EDF7E5; border-color: rgba(125,177,66,0.4); }
+  .margin-cell.negative { background: #FFF0F0; border-color: rgba(255,33,71,0.3); }
+  .margin-cell.neutral  { background: #F5F5F7; border-color: var(--border); }
+
+  .margin-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .margin-cell.positive .margin-label { color: #3a6610; }
+  .margin-cell.negative .margin-label { color: #a32d2d; }
+  .margin-cell.neutral  .margin-label { color: var(--muted); }
+
+  .margin-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .margin-cell.positive .margin-value { color: #2a5008; }
+  .margin-cell.negative .margin-value { color: #c0202a; }
+  .margin-cell.neutral  .margin-value { color: var(--muted); }
+
+  .margin-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 4px;
+    opacity: 0.75;
+  }
+
+  .margin-cell.positive .margin-pct { color: #3a6610; }
+  .margin-cell.negative .margin-pct { color: #a32d2d; }
+
+  /* Section divider label */
+  .section-divider {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 6px 0 4px;
+    border-bottom: 1px solid var(--bg);
+    margin-bottom: 2px;
+  }
+
+  .p-row.subtotal .pk { color: var(--jet); font-weight: 600; font-size: 13px; }
+  .p-row.subtotal .pv { color: var(--jet); font-weight: 600; }
+
+  .p-row.grand-total .pk { color: var(--black); font-weight: 600; font-size: 14px; }
+  .p-row.grand-total .pv { color: var(--black); font-weight: 600; font-size: 15px; }
+
+  /* Inline number input for profitability page */
+  .p-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 5px 8px 5px 10px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  .p-input-wrap:focus-within { border-color: var(--blue); }
+
+  .p-input-wrap .unit { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+  .p-input-wrap input {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    text-align: right;
+    width: 90px;
+    padding: 0;
+    -webkit-appearance: none;
+  }
+
+  .p-select-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 5px 8px 5px 12px;
+    border: 1.5px solid transparent;
+    transition: border-color 0.15s;
+    flex: 1;
+    max-width: 240px;
+  }
+
+  .p-select-wrap:focus-within { border-color: var(--blue); }
+
+  .p-select-wrap select {
+    flex: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    text-align: right;
+  }
+
+  .p-select-wrap .arrow { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+
+  .allocation-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--bg);
+    font-size: 14px;
+    gap: 12px;
+  }
+
+  .alloc-label { color: var(--muted); font-size: 13px; flex-shrink: 0; }
+
+  .alloc-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 4px 4px 4px 12px;
+  }
+
+  .alloc-stepper input {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    text-align: right;
+    width: 48px;
+    padding: 4px 0;
+    -webkit-appearance: none;
+  }
+
+  .alloc-stepper .unit { font-size: 12px; color: var(--muted); }
+
+  .step-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.05);
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--jet);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .step-btn:active { background: rgba(0,0,0,0.12); }
 
   .footer {
     text-align: center;
@@ -473,25 +598,27 @@
 <body>
 
 <div class="header">
-  <div class="header-eyebrow">Compensation Tool</div>
-  <h1>Target Comp<br>Calculator</h1>
-  <div class="header-sub">Prospective client pricing</div>
+  <div class="header-eyebrow">Internal Pricing Tool</div>
+  <h1>Account Analysis</h1>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('comp')">Target Comp</button>
+    <button class="tab-btn" onclick="switchTab('profit')">Profitability</button>
+  </div>
 </div>
 
+<!-- ══════════════ TAB 1: COMP CALCULATOR ══════════════ -->
+<div class="page active" id="page-comp">
 <div class="content">
 
-  <!-- Headcount -->
   <div class="card">
     <div class="card-label">Headcount</div>
     <div class="input-row">
       <label>EEs</label>
-      <input type="number" id="hcInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" min="1" max="50000" oninput="calculate()">
-      <button class="clear-btn" id="clearHcBtn" onclick="clearHeadcount()" aria-label="Clear headcount">×</button>
+      <input type="number" id="hcInput" inputmode="numeric" pattern="[0-9]*" placeholder="0" min="1" max="50000" oninput="calcComp()">
     </div>
     <div id="badgeArea"></div>
   </div>
 
-  <!-- Results -->
   <div class="card" id="resultsCard">
     <div class="card-label">Compensation range</div>
     <div id="resultsArea">
@@ -502,22 +629,27 @@
     </div>
   </div>
 
-  <!-- Detail + editable assumptions -->
   <div id="detailCard" class="card" style="display:none;">
     <div class="card-header-row">
       <div class="card-label">Calculation detail</div>
-      <button class="reset-btn" id="resetBtn" onclick="resetAssumptions()">Reset</button>
+      <button class="reset-btn" id="resetBtn" onclick="resetComp()">Reset</button>
     </div>
 
     <div class="detail-row">
       <span class="dk">Participation</span>
       <div class="inline-input-wrap" id="partWrap">
-        <input type="number" id="partAdj" inputmode="decimal" value="70" min="1" max="100" step="1" oninput="onAssumptionChange()">
+        <input type="number" id="partAdj" inputmode="decimal" value="70" min="1" max="100" step="1" oninput="onCompAssumptionChange()">
         <span class="unit">%</span>
       </div>
     </div>
 
-    <input type="hidden" id="pepyAdj" value="17000">
+    <div class="detail-row">
+      <span class="dk">PEPY spend</span>
+      <div class="inline-input-wrap" id="pepyWrap">
+        <span class="unit">$</span>
+        <input type="number" id="pepyAdj" inputmode="numeric" value="17000" min="0" oninput="onCompAssumptionChange()">
+      </div>
+    </div>
 
     <div class="detail-row">
       <span class="dk">Commission rate</span>
@@ -525,17 +657,12 @@
     </div>
 
     <div class="detail-row">
-      <span class="dk">PEPM rate</span>
-      <span class="dv" id="pepmRate">—</span>
-    </div>
-
-    <div class="detail-row">
-      <span class="dk">Commission based comp</span>
+      <span class="dk">Commission-based comp</span>
       <span class="dv" id="pepyResult">—</span>
     </div>
 
     <div class="detail-row">
-      <span class="dk">PEPM based comp</span>
+      <span class="dk" id="pepmLabel">PEPM × 12</span>
       <span class="dv" id="pepmResult">—</span>
     </div>
 
@@ -555,10 +682,153 @@
   </div>
 
 </div>
-
 <div class="footer">Based on internal pricing model · For internal use only</div>
+</div>
+
+<!-- ══════════════ TAB 2: PROFITABILITY ══════════════ -->
+<div class="page" id="page-profit">
+<div class="content">
+
+  <!-- Revenue Target -->
+  <div class="card">
+    <div class="card-header-row">
+      <div class="card-label">Revenue target</div>
+      <button class="reset-btn" id="profitResetBtn" onclick="resetProfit()">Reset</button>
+    </div>
+    <div class="input-row">
+      <label>$</label>
+      <input type="number" id="revTarget" inputmode="numeric" placeholder="0" min="0" oninput="calcProfit()">
+    </div>
+  </div>
+
+  <!-- Service Structure -->
+  <div class="card">
+    <div class="card-label">Service structure</div>
+
+    <div class="p-row" style="padding-top:0;">
+      <span class="pk">Structure</span>
+      <div class="p-select-wrap">
+        <select id="svcSelect" onchange="calcProfit()">
+          <option value="">— select —</option>
+          <option value="two-low">Two Person – Low</option>
+          <option value="two-high">Two Person – High</option>
+          <option value="three-low">Three Person – Low</option>
+          <option value="three-high">Three Person – High</option>
+        </select>
+        <span class="arrow">▾</span>
+      </div>
+    </div>
+
+    <div class="allocation-row">
+      <span class="alloc-label">Allocation</span>
+      <div class="alloc-stepper">
+        <input type="number" id="allocPct" value="10" min="1" max="100" step="1" inputmode="numeric" oninput="calcProfit()">
+        <span class="unit">%</span>
+        <button class="step-btn" onclick="stepAlloc(-1)">−</button>
+        <button class="step-btn" onclick="stepAlloc(1)">+</button>
+      </div>
+    </div>
+
+    <div class="p-row">
+      <span class="pk">Payroll total</span>
+      <span class="pv computed" id="payrollTotal">—</span>
+    </div>
+
+    <div class="allocation-row">
+      <span class="alloc-label">Additional expenses</span>
+      <div class="p-input-wrap">
+        <span class="unit">$</span>
+        <input type="number" id="otherExp" inputmode="numeric" placeholder="0" value="0" min="0" oninput="calcProfit()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Margin result — above summary -->
+  <div class="margin-cell neutral" id="marginCell">
+    <div class="margin-label" id="marginLabel">Margin</div>
+    <div class="margin-value" id="marginValue">—</div>
+    <div class="margin-pct" id="marginPct"></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card" id="profitSummary" style="display:none;">
+    <div class="card-label">Expense summary</div>
+
+    <div class="section-divider">Payroll</div>
+    <div class="p-row">
+      <span class="pk">Payroll total</span>
+      <span class="pv" id="s-payroll">—</span>
+    </div>
+    <div class="p-row">
+      <span class="pk">Fringe load (30%)</span>
+      <span class="pv" id="s-fringe">—</span>
+    </div>
+    <div class="p-row">
+      <span class="pk">Bonus accruals (2% of rev)</span>
+      <span class="pv" id="s-bonus">—</span>
+    </div>
+    <div class="p-row subtotal">
+      <span class="pk">Burdened payroll</span>
+      <span class="pv" id="s-burdened">—</span>
+    </div>
+
+    <div class="section-divider" style="margin-top:8px;">Overhead</div>
+    <div class="p-row">
+      <span class="pk">Specialty & support (8.6%)</span>
+      <span class="pv" id="s-specialty">—</span>
+    </div>
+    <div class="p-row">
+      <span class="pk">Overhead allocation (10%)</span>
+      <span class="pv" id="s-overhead">—</span>
+    </div>
+    <div class="p-row">
+      <span class="pk">Other expenses</span>
+      <span class="pv" id="s-other">—</span>
+    </div>
+    <div class="p-row subtotal">
+      <span class="pk">Additional expenses</span>
+      <span class="pv" id="s-additional">—</span>
+    </div>
+
+    <div class="p-row subtotal">
+      <span class="pk">Total service expenses</span>
+      <span class="pv" id="s-svcTotal">—</span>
+    </div>
+
+    <div class="section-divider" style="margin-top:8px;">Production</div>
+    <div class="p-row">
+      <span class="pk">Production expenses (50% of rev)</span>
+      <span class="pv" id="s-production">—</span>
+    </div>
+
+    <div class="divider" style="margin:12px 0;"></div>
+
+    <div class="p-row grand-total">
+      <span class="pk">Total expenses</span>
+      <span class="pv" id="s-totalExp">—</span>
+    </div>
+  </div>
+
+  <div style="height:20px;"></div>
+
+</div>
+<div class="footer">Based on internal pricing model · For internal use only</div>
+</div>
 
 <script>
+/* ─────────────────────────────────────────
+   TAB SWITCHING
+───────────────────────────────────────── */
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+/* ─────────────────────────────────────────
+   COMP CALCULATOR
+───────────────────────────────────────── */
 const BANDS = [
   { lower:1,    upper:100,   pepm:52, comm:0.05   },
   { lower:101,  upper:200,   pepm:48, comm:0.05   },
@@ -568,15 +838,15 @@ const BANDS = [
   { lower:501,  upper:750,   pepm:31, comm:0.03   },
   { lower:751,  upper:1000,  pepm:23, comm:0.025  },
   { lower:1001, upper:1500,  pepm:17, comm:0.02   },
-  { lower:1501, upper:1989,  pepm:16, comm:0.0175 },
-  { lower:1990, upper:3000,  pepm:15, comm:0.015  },
+  { lower:1501, upper:2000,  pepm:16, comm:0.0175 },
+  { lower:2001, upper:3000,  pepm:15, comm:0.015  },
   { lower:3001, upper:5000,  pepm:10, comm:0.01   },
   { lower:5001, upper:7500,  pepm:8,  comm:0.008  },
   { lower:7501, upper:10000, pepm:6,  comm:0.0075 },
   { lower:10001,upper:50000, pepm:4,  comm:0.005  },
 ];
 
-const POINTS = [
+const COMP_POINTS = [
   { key:'low',   label:'Low range',    mult:0.85, style:'style-low'    },
   { key:'tlow',  label:'Target low',   mult:0.90, style:'style-tlow'   },
   { key:'mid',   label:'Target mid',   mult:1.00, style:'style-target' },
@@ -588,40 +858,34 @@ const DEFAULT_PEPY = 17000;
 const DEFAULT_PART = 70;
 
 function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+function fmtPct(n) { return (n * 100).toFixed(1) + '%'; }
 function getBand(hc) { return BANDS.find(b => hc >= b.lower && hc <= b.upper) || null; }
 
-function isModified() {
-  const part = parseFloat(document.getElementById('partAdj').value);
-  return part !== DEFAULT_PART;
+function isCompModified() {
+  return parseFloat(document.getElementById('pepyAdj').value) !== DEFAULT_PEPY
+      || parseFloat(document.getElementById('partAdj').value) !== DEFAULT_PART;
 }
 
-function onAssumptionChange() {
+function onCompAssumptionChange() {
+  const pepyChanged = parseFloat(document.getElementById('pepyAdj').value) !== DEFAULT_PEPY;
   const partChanged = parseFloat(document.getElementById('partAdj').value) !== DEFAULT_PART;
+  document.getElementById('pepyWrap').classList.toggle('changed', pepyChanged);
   document.getElementById('partWrap').classList.toggle('changed', partChanged);
-  document.getElementById('resetBtn').classList.toggle('active', partChanged);
-  calculate();
+  document.getElementById('resetBtn').classList.toggle('active', pepyChanged || partChanged);
+  calcComp();
 }
 
-function resetAssumptions() {
+function resetComp() {
   document.getElementById('pepyAdj').value = DEFAULT_PEPY;
   document.getElementById('partAdj').value = DEFAULT_PART;
+  document.getElementById('pepyWrap').classList.remove('changed');
   document.getElementById('partWrap').classList.remove('changed');
   document.getElementById('resetBtn').classList.remove('active');
-  calculate();
+  calcComp();
 }
 
-function clearHeadcount() {
-  const input = document.getElementById('hcInput');
-  input.value = '';
-  document.getElementById('clearHcBtn').classList.remove('visible');
-  calculate();
-  input.focus();
-}
-
-function calculate() {
+function calcComp() {
   const hc      = parseInt(document.getElementById('hcInput').value) || 0;
-  const clearBtn = document.getElementById('clearHcBtn');
-  if (clearBtn) clearBtn.classList.toggle('visible', document.getElementById('hcInput').value !== '');
   const pepyVal = parseFloat(document.getElementById('pepyAdj').value) || DEFAULT_PEPY;
   const partPct = parseFloat(document.getElementById('partAdj').value);
   const part    = isNaN(partPct) ? 0.70 : partPct / 100;
@@ -630,7 +894,7 @@ function calculate() {
   const resultsArea = document.getElementById('resultsArea');
   const resultsCard = document.getElementById('resultsCard');
   const detailCard  = document.getElementById('detailCard');
-  const modified    = isModified();
+  const modified    = isCompModified();
 
   if (!hc || hc < 1) {
     badgeArea.innerHTML = '';
@@ -641,14 +905,14 @@ function calculate() {
   }
 
   if (hc > 50000) {
-    resultsArea.innerHTML = '<div class="error-msg">Headcount exceeds model range (50,000). Please verify input.</div>';
+    resultsArea.innerHTML = '<div class="error-msg">Headcount exceeds model range (50,000).</div>';
     detailCard.style.display = 'none';
     return;
   }
 
   const band = getBand(hc);
   if (!band) {
-    resultsArea.innerHTML = '<div class="error-msg">No pricing band found for this headcount.</div>';
+    resultsArea.innerHTML = '<div class="error-msg">No pricing band found.</div>';
     detailCard.style.display = 'none';
     return;
   }
@@ -662,16 +926,11 @@ function calculate() {
     : `${band.lower.toLocaleString()} – ${band.upper.toLocaleString()}`;
 
   badgeArea.innerHTML = `<div class="lookup-badge">Band <span>${bandLabel}</span> EEs · blended avg</div>`;
-
   resultsCard.classList.toggle('modified', modified);
 
-  let html = '';
-  if (modified) {
-    html += `<div class="modified-banner"><div class="dot"></div>Modified assumptions — results reflect adjusted inputs</div>`;
-  }
-
+  let html = modified ? `<div class="modified-banner"><div class="dot"></div>Modified assumptions — results reflect adjusted inputs</div>` : '';
   html += '<div class="results-grid">';
-  POINTS.forEach(p => {
+  COMP_POINTS.forEach(p => {
     const val = targetMid * p.mult;
     html += `<div class="result-cell ${p.style}${p.key === 'mid' ? ' target' : ''}">
       <div class="cell-label">${p.label}</div>
@@ -682,12 +941,111 @@ function calculate() {
   resultsArea.innerHTML = html;
 
   document.getElementById('commRate').textContent   = (band.comm * 100).toFixed(2) + '%';
-  document.getElementById('pepmRate').textContent   = `$${band.pepm} × 12`;
   document.getElementById('pepyResult').textContent = fmt(pepyComp);
+  document.getElementById('pepmLabel').textContent  = `PEPM ($${band.pepm} × 12)`;
   document.getElementById('pepmResult').textContent = fmt(pepmComp);
   document.getElementById('blendedMid').textContent = fmt(targetMid);
-
   detailCard.style.display = 'block';
+}
+
+/* ─────────────────────────────────────────
+   PROFITABILITY CALCULATOR
+───────────────────────────────────────── */
+
+// Service structure table: comp, default allocation %
+const SVC_STRUCTURES = {
+  'two-low':   { label: 'Two Person – Low',   comp: 240000 },
+  'two-high':  { label: 'Two Person – High',  comp: 300000 },
+  'three-low': { label: 'Three Person – Low', comp: 315000 },
+  'three-high':{ label: 'Three Person – High',comp: 375000 },
+};
+
+const FRINGE_RATE    = 0.30;   // 30% of payroll
+const BONUS_RATE     = 0.02;   // 2% of revenue
+const SPECIALTY_RATE = 0.086;  // 8.6% of revenue
+const OVERHEAD_RATE  = 0.10;   // 10% of revenue
+
+function stepAlloc(delta) {
+  const el = document.getElementById('allocPct');
+  let v = parseFloat(el.value) || 10;
+  v = Math.min(100, Math.max(1, v + delta));
+  el.value = v;
+  calcProfit();
+}
+
+function resetProfit() {
+  document.getElementById('revTarget').value  = '';
+  document.getElementById('svcSelect').value  = '';
+  document.getElementById('allocPct').value   = '10';
+  document.getElementById('otherExp').value   = '0';
+  document.getElementById('profitResetBtn').classList.remove('active');
+  calcProfit();
+}
+
+function calcProfit() {
+  const rev       = parseFloat(document.getElementById('revTarget').value) || 0;
+  const svcKey    = document.getElementById('svcSelect').value;
+  const allocPct  = parseFloat(document.getElementById('allocPct').value) || 10;
+  const otherExp  = parseFloat(document.getElementById('otherExp').value) || 0;
+
+  const isDirty = rev > 0 || svcKey !== '' || allocPct !== 10 || otherExp > 0;
+  document.getElementById('profitResetBtn').classList.toggle('active', isDirty);
+
+  const svc = SVC_STRUCTURES[svcKey];
+
+  // Payroll total = comp * allocation %
+  const payrollTotal = svc ? svc.comp * (allocPct / 100) : 0;
+  document.getElementById('payrollTotal').textContent = svc ? fmt(payrollTotal) : '—';
+
+  // Only show summary if we have revenue + service structure
+  const profitSummary = document.getElementById('profitSummary');
+  const marginCell    = document.getElementById('marginCell');
+
+  if (!rev || !svc) {
+    profitSummary.style.display = 'none';
+    marginCell.className = 'margin-cell neutral';
+    document.getElementById('marginValue').textContent = '—';
+    document.getElementById('marginPct').textContent = '';
+    document.getElementById('marginLabel').textContent = 'Margin';
+    return;
+  }
+
+  // Formula chain
+  const fringe       = payrollTotal * FRINGE_RATE;
+  const bonus        = rev * BONUS_RATE;
+  const burdened     = payrollTotal + fringe + bonus;
+
+  const specialty    = rev * SPECIALTY_RATE;
+  const overhead     = rev * OVERHEAD_RATE;
+  const additional   = specialty + overhead + otherExp;
+
+  const svcTotal     = burdened + additional;
+  const production   = rev * 0.50;
+  const totalExp     = svcTotal + production;
+  const margin       = rev - totalExp;
+  const marginPct    = rev > 0 ? margin / rev : 0;
+
+  // Update summary card
+  document.getElementById('s-payroll').textContent    = fmt(payrollTotal);
+  document.getElementById('s-fringe').textContent     = fmt(fringe);
+  document.getElementById('s-bonus').textContent      = fmt(bonus);
+  document.getElementById('s-burdened').textContent   = fmt(burdened);
+  document.getElementById('s-specialty').textContent  = fmt(specialty);
+  document.getElementById('s-overhead').textContent   = fmt(overhead);
+  document.getElementById('s-other').textContent      = fmt(otherExp);
+  document.getElementById('s-additional').textContent = fmt(additional);
+  document.getElementById('s-svcTotal').textContent   = fmt(svcTotal);
+  document.getElementById('s-production').textContent = fmt(production);
+  document.getElementById('s-totalExp').textContent   = fmt(totalExp);
+  profitSummary.style.display = 'block';
+
+  // Margin display
+  const isPos = margin > 0;
+  const isNeg = margin < 0;
+  marginCell.className = 'margin-cell ' + (isPos ? 'positive' : isNeg ? 'negative' : 'neutral');
+  document.getElementById('marginLabel').textContent = isNeg ? 'Margin (Loss)' : 'Margin';
+  document.getElementById('marginValue').textContent = (isNeg ? '(' : '') + fmt(Math.abs(margin)) + (isNeg ? ')' : '');
+  document.getElementById('marginPct').textContent   = fmtPct(marginPct) + ' of revenue';
 }
 </script>
 </body>
